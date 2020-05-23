@@ -1,12 +1,17 @@
+
 from flask import (
     Blueprint,
     render_template,
     request,
     abort,
-    url_for
+    url_for,
+    flash,
+    redirect
 )
+from flask_login import current_user, login_user, logout_user
 
 from app.forms import LoginForm
+from app.db_models import UserData
 
 custom_me = Blueprint('custom_me', __name__, template_folder='templates')
 
@@ -21,13 +26,28 @@ def main():
 
 @custom_me.route('/login', methods=['GET', 'POST'])
 def login():
+    if current_user.is_authenticated:
+        return redirect(url_for('custom_me.main'))
     login_form = LoginForm()
+    if login_form.validate_on_submit():
+        user = UserData.query.filter_by(name=login_form.username.data).first()
+        if user is None or not user.check_password(login_form.password.data):
+            flash('Invalid username or password, please try again!')
+            return redirect(url_for('custom_me.login'))
+        login_user(user, remember=login_form.remember_me.data)
+        return redirect(url_for('custom_me.main'))
     return render_template('login.html', title='Log In', form=login_form)
 
 
-@custom_me.route('/signin', methods=['GET', 'POST'])
-def signin():
-    return "Signin page"
+@custom_me.route('/logout', methods=['GET', 'POST'])
+def logout():
+    logout_user()
+    return redirect(url_for('custom_me.main'))
+
+
+@custom_me.route('/signup', methods=['GET', 'POST'])
+def signup():
+    return "Signup page"
 
 
 # @custom_me.route('/user/<username>')

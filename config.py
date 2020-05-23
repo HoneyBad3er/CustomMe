@@ -7,7 +7,7 @@ class Config(object):
     CSRF_ENABLED = True
     SECRET_KEY = 'MY_SECRET_KEY'
     # Database URL
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL')or \
+    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or \
         'sqlite:///' + os.path.join(basedir, 'custom_me.db')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
