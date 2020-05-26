@@ -9,9 +9,10 @@ from flask import (
     redirect
 )
 from flask_login import current_user, login_user, logout_user
+import pandas as pd
 
-from app.forms import LoginForm
-from app.db_models import UserData
+from app.forms import LoginForm, DeviceForm
+from app.db_models import UserData, DevicesData
 
 custom_me = Blueprint('custom_me', __name__, template_folder='templates')
 
@@ -19,9 +20,7 @@ custom_me = Blueprint('custom_me', __name__, template_folder='templates')
 @custom_me.route('/')
 @custom_me.route('/main', methods=['GET'])
 def main():
-    # Mock user
-    user = {'username': 'Marat'}
-    return render_template('main.html', title='Home', user=user, login_link='/login')
+    return render_template('main.html', title='Home', login_link='/login')
 
 
 @custom_me.route('/login', methods=['GET', 'POST'])
@@ -47,7 +46,25 @@ def logout():
 
 @custom_me.route('/signup', methods=['GET', 'POST'])
 def signup():
-    return "Signup page"
+    return "Sign Up page"
+
+
+@custom_me.route('/get_eq', methods=['GET', 'POST'])
+def get_eq():
+    device_form = DeviceForm()
+    if device_form.validate_on_submit():
+        device = DevicesData.query.filter_by(device_name=device_form.headphones_name.data).first()
+        if device is None:
+            flash('Invalid device name, please try again!')
+            return redirect(url_for('custom_me.get_eq'))
+        return redirect(url_for('custom_me.show_plot', eq_set_name=device.eq_set_name))
+    return render_template('get_eq.html', title='Get equalizer', form=device_form)
+
+
+@custom_me.route('/show_plot', methods=['GET', 'POST'])
+def show_plot():
+    df = pd.read_csv(request.args.get('eq_set_name'))
+    return df.to_html()
 
 
 # @custom_me.route('/user/<username>')

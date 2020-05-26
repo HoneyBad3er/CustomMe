@@ -17,6 +17,9 @@ def create_app():
     with app.test_request_context():
         db.create_all()
 
+    # from app.plotlydash.dashboard import create_dashboard
+    # app = create_dashboard(app)
+
     from app.routes import custom_me
     app.register_blueprint(custom_me)
 
