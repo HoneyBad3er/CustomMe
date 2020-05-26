@@ -57,7 +57,7 @@ def get_eq():
         if device is None:
             flash('Invalid device name, please try again!')
             return redirect(url_for('custom_me.get_eq'))
-        return redirect(url_for('custom_me.show_plot', eq_set_name=device.eq_set_name))
+        return redirect(url_for('custom_me.show_plot', eq_set_name=device.id))
     return render_template('get_eq.html', title='Get equalizer', form=device_form)
 
 
