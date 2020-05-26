@@ -1,13 +1,14 @@
+
 from flask_wtf import FlaskForm
 from wtforms import (StringField, PasswordField,
                      BooleanField, SubmitField,
                      SelectField, FileField
-                     )
+)
 from flask_wtf.file import FileRequired, FileAllowed
 from wtforms.validators import (DataRequired, Email,
                                 regexp, ValidationError,
                                 EqualTo
-                                )
+)
 from app.db_models import UserData
 
 

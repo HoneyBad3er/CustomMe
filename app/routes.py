@@ -6,7 +6,7 @@ from flask import (Blueprint,
                    url_for,
                    flash,
                    redirect
-                   )
+)
 from flask_login import current_user, login_user, logout_user
 import pandas as pd
 import os
@@ -15,7 +15,7 @@ from app.forms import (LoginForm,
                        DeviceForm,
                        EqSetForm,
                        SignUpForm
-                       )
+)
 from app.db_models import UserData, DevicesData
 from app.database import db
 
@@ -98,4 +98,3 @@ def set_eq():
 def show_plot():
     df = pd.read_csv(request.args.get('eq_set_name'))
     return df.to_html()
-
