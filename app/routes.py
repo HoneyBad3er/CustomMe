@@ -1,18 +1,24 @@
 
-from flask import (
-    Blueprint,
-    render_template,
-    request,
-    abort,
-    url_for,
-    flash,
-    redirect
-)
+from flask import (Blueprint,
+                   render_template,
+                   request,
+                   abort,
+                   url_for,
+                   flash,
+                   redirect
+                   )
 from flask_login import current_user, login_user, logout_user
 import pandas as pd
+import os
 
-from app.forms import LoginForm, DeviceForm
+from app.forms import (LoginForm,
+                       DeviceForm,
+                       EqSetForm,
+                       SignUpForm
+                       )
 from app.db_models import UserData, DevicesData
+from app.database import db
+
 
 custom_me = Blueprint('custom_me', __name__, template_folder='templates')
 
@@ -46,7 +52,17 @@ def logout():
 
 @custom_me.route('/signup', methods=['GET', 'POST'])
 def signup():
-    return "Sign Up page"
+    if current_user.is_authenticated:
+        return redirect(url_for('custom_me.main'))
+    signup_form = SignUpForm()
+    if signup_form.validate_on_submit():
+        new_user = UserData(name=signup_form.username.data,
+                            email=signup_form.email.data)
+        new_user.set_password(signup_form.password.data)
+        db.session.add(new_user)
+        db.session.commit()
+        return redirect(url_for('custom_me.login'))
+    return render_template('signup.html', title='Sign Up', form=signup_form)
 
 
 @custom_me.route('/get_eq', methods=['GET', 'POST'])
@@ -61,14 +77,25 @@ def get_eq():
     return render_template('get_eq.html', title='Get equalizer', form=device_form)
 
 
+@custom_me.route('/set_eq', methods=['GET', 'POST'])
+def set_eq():
+    device_form = EqSetForm()
+    if device_form.validate_on_submit():
+        if DevicesData.session.query.filter_by(device_name=device_form.headphones_name.data).first() is None:
+            if device_form.eg_file.data:
+                eq_data = request.FILES[device_form.eg_file.name].read()
+                open(os.path.join(os.environ['UPLOAD_PATH'], device_form.eg_file.data), 'w').write(eq_data)
+            device = DevicesData()
+            device.device_name = device_form.headphones_name
+            device.eq_set_filename = device_form.eg_file.name
+            db.session.add(device)
+            db.session.commit()
+
+    return render_template('set_eq.html', title='Get equalizer', form=device_form)
+
+
 @custom_me.route('/show_plot', methods=['GET', 'POST'])
 def show_plot():
     df = pd.read_csv(request.args.get('eq_set_name'))
     return df.to_html()
 
-
-# @custom_me.route('/user/<username>')
-# # @login_required
-# def user(username):
-#     user = User.query.filter_by(username=username).first_or_404()
-#     return render_template('user.html', user=user)

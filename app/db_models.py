@@ -26,7 +26,7 @@ class UserData(UserMixin, db.Model):
 
 @login_manager.user_loader
 def load_user(user_id):
-    return UserData.query(int(user_id))
+    return UserData.query.get(int(user_id))
 
 
 @event.listens_for(UserData, 'before_insert')

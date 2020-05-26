@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block content %}
+    <h1>Set equalizer</h1>
+    <form action="" method="post" novalidate>
+        {{ form.hidden_tag() }}
+        <p>
+            {{ form.headphones_name.label }}<br>
+            {{ form.headphones_name(size=32) }}<br>
+            {% for error in form.headphones_name.errors %}
+            <span style="color: red;">[{{ error }}]</span>
+            {% endfor %}
+        </p>
+        <p>
+            {{ form.player_name.label }}<br>
+            {{ form.player_name(size=32) }}<br>
+            {% for error in form.player_name.errors %}
+            <span style="color: red;">[{{ error }}]</span>
+            {% endfor %}
+        </p>
+        <p>{{ form.genre.label }} <br> {{ form.genre }}</p>
+        <p>
+            {{form.eg_file.label}} <br>
+            {{form.eg_file(size=32)}} <br>
+        <p>{{ form.submit() }}</p>
+    </form>
+{% endblock %}
