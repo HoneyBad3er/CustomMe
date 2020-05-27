@@ -7,7 +7,11 @@ from flask import (Blueprint,
                    flash,
                    redirect
 )
-from flask_login import current_user, login_user, logout_user
+from flask_login import (current_user,
+                         login_user,
+                         logout_user,
+                         login_required
+)
 import pandas as pd
 import os
 from werkzeug.utils import secure_filename
@@ -67,6 +71,7 @@ def signup():
 
 
 @custom_me.route('/get_eq', methods=['GET', 'POST'])
+@login_required
 def get_eq():
     device_form = DeviceForm()
     if device_form.validate_on_submit():
@@ -79,6 +84,7 @@ def get_eq():
 
 
 @custom_me.route('/set_eq', methods=['GET', 'POST'])
+@login_required
 def set_eq():
     device_form = EqSetForm()
     if device_form.validate_on_submit():
