@@ -49,7 +49,6 @@ class DevicesData(db.Model):
     device_name = db.Column(db.String(100), nullable=False, unique=True)
     eq_set_filename = db.Column(db.String(1000))
     device_info = db.Column(db.String(100), index=True)
-
     user_id = db.Column(db.Integer, db.ForeignKey('user_data.id'))
 
     def __str__(self):

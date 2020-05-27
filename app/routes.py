@@ -24,6 +24,9 @@ from app.forms import (LoginForm,
 from app.db_models import UserData, DevicesData
 from app.database import db
 
+basedir = os.path.abspath(os.path.dirname(__file__))
+UPLOAD_PATH = os.environ.get('UPLOAD_PATH') or \
+              os.path.join(basedir, 'static/csv/')
 
 custom_me = Blueprint('custom_me', __name__, template_folder='templates')
 
@@ -79,7 +82,8 @@ def get_eq():
         if device is None:
             flash('Invalid device name, please try again!')
             return redirect(url_for('custom_me.get_eq'))
-        return redirect(url_for('custom_me.show_plot', eq_set_name=device.id))
+        print(device.eq_set_filename)
+        return redirect(url_for('custom_me.show_plot', eq_set_name=device.eq_set_filename))
     return render_template('get_eq.html', title='Get equalizer', form=device_form)
 
 
@@ -88,20 +92,26 @@ def get_eq():
 def set_eq():
     device_form = EqSetForm()
     if device_form.validate_on_submit():
-        if DevicesData.session.query.filter_by(device_name=device_form.headphones_name.data).first() is None:
+        if DevicesData.query.filter_by(device_name=device_form.headphones_name.data).first() is None:
             if device_form.eg_file.data:
                 eq_data = device_form.eg_file.data
                 filename = secure_filename(eq_data.filename)
                 eq_data.save(os.path.join(UPLOAD_PATH, filename))
-                new_device = DevicesData(device_name=device_form.headphones_name,
-                                         eq_set_filename=device_form.eg_file.name)
+                print(device_form.headphones_name.data)
+                print(filename)
+                new_device = DevicesData(device_name=device_form.headphones_name.data,
+                                         eq_set_filename=filename,
+                                         device_info="Headphones",
+                                         user_id=current_user.get_id())
                 db.session.add(new_device)
                 db.session.commit()
                 return redirect(url_for('custom_me.main'))
-    return render_template('set_eq.html', title='Get equalizer', form=device_form)
+        else:
+            return redirect(url_for('custom_me.main'))
+    return render_template('set_eq.html', title='Set equalizer', form=device_form)
 
 
 @custom_me.route('/show_plot', methods=['GET', 'POST'])
 def show_plot():
-    df = pd.read_csv(request.args.get('eq_set_name'))
+    df = pd.read_csv(os.path.join(UPLOAD_PATH, request.args.get('eq_set_name')))
     return df.to_html()
