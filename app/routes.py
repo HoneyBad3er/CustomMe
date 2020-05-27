@@ -10,6 +10,7 @@ from flask import (Blueprint,
 from flask_login import current_user, login_user, logout_user
 import pandas as pd
 import os
+from werkzeug.utils import secure_filename
 
 from app.forms import (LoginForm,
                        DeviceForm,
@@ -83,14 +84,14 @@ def set_eq():
     if device_form.validate_on_submit():
         if DevicesData.session.query.filter_by(device_name=device_form.headphones_name.data).first() is None:
             if device_form.eg_file.data:
-                eq_data = request.FILES[device_form.eg_file.name].read()
-                open(os.path.join(os.environ['UPLOAD_PATH'], device_form.eg_file.data), 'w').write(eq_data)
-            device = DevicesData()
-            device.device_name = device_form.headphones_name
-            device.eq_set_filename = device_form.eg_file.name
-            db.session.add(device)
-            db.session.commit()
-
+                eq_data = device_form.eg_file.data
+                filename = secure_filename(eq_data.filename)
+                eq_data.save(os.path.join(UPLOAD_PATH, filename))
+                new_device = DevicesData(device_name=device_form.headphones_name,
+                                         eq_set_filename=device_form.eg_file.name)
+                db.session.add(new_device)
+                db.session.commit()
+                return redirect(url_for('custom_me.main'))
     return render_template('set_eq.html', title='Get equalizer', form=device_form)
 
 
